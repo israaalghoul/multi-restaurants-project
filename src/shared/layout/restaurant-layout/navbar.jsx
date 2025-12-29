@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Menu, X, ChevronDown, Search, ShoppingCart } from "lucide-react";
@@ -6,6 +6,7 @@ import { useNavigate } from "react-router";
 import { appRoutes } from "../../../routes/app-routes";
 import logoImg from "@/assets/logo.svg";
 import profileImg from "@/assets/profile.jpg";
+import useCartStore from '@/store/cartStore';
 
 import {
   DropdownMenu,
@@ -30,6 +31,8 @@ export function Navbar() {
     { code: "+966", flag: "🇸🇦", name: "Saudi Arabia" },
     { code: "+971", flag: "🇦🇪", name: "UAE" },
   ];
+
+const totalCartItems = useCartStore(state => state.items.length);
 
   return (
     <nav className="w-full fixed top-0 left-0 z-50 bg-foreground shadow-sm">
@@ -56,9 +59,11 @@ export function Navbar() {
               <ShoppingCart size={20}
                 className="flex items-center hover:border-transparent cursor-pointer text-background "
               />
+              {totalCartItems > 0 && (
             <span className="absolute -top-2 -right-2 bg-primary text-background text-xs w-5 h-5 flex items-center justify-center rounded-full">
-              3
+              {totalCartItems}
             </span>
+              )}
           </div>
           {/* Flag */}
           <DropdownMenu>

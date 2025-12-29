@@ -1,5 +1,6 @@
 export const appRoutes = Object.freeze({
   home: "/",
+  homeRestaurant: "/restaurant/:restaurantId",
   contact: "/contact-us",
   auth: {
     login: "/login",

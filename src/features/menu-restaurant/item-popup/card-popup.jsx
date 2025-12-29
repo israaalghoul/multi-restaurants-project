@@ -10,17 +10,34 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
+import useCartStore from "@/store/cartStore";
 
 export default function CardPopup({ item, onClose }) {
-  if (!item) return null;
-
+  if (!item) {
+    return null;
+  }
+  const { addItem, loading } = useCartStore();
   const [quantity, setQuantity] = useState(1);
+  const [notes, setNotes] = useState("");
   const [selectedOption, setSelectedOption] = useState("Choose Option");
 
   const increase = () => setQuantity((q) => q + 1);
   const decrease = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
 
   const totalPrice = item.price * quantity;
+
+  const handleAddToCart = () => {
+    const cartData = {
+      product_id: item.id,
+      quantity: quantity,
+    };
+  if (notes.trim() !== '') {
+      cartData.notes = notes;
+    }
+    //  console.log("--- FINAL ATTEMPT: Sending this exact body ---", cartData);
+    addItem(cartData, item.restaurant_admin_id);
+    onClose();
+  };
   return (
     <div className=" fixed inset-0  bg-card-foreground/40 backdrop-blur-sm flex justify-center items-center z-50">
       <div className="bg-accent rounded-2xl p-6 w-full max-w-[900px] max-h-screen overflow-y-auto relative shadow-xl">
@@ -32,7 +49,8 @@ export default function CardPopup({ item, onClose }) {
         </button>
         <div className="flex lg:flex-row flex-col justify-evenly gap-3">
           <img
-            src={saladImg}
+            src={item.image || saladImg}
+            alt={item.name}
             className="w-[350px] h-[350px] object-cover rounded-xl"
           />
           <div className="flex flex-col justify-center gap-2">
@@ -83,42 +101,35 @@ export default function CardPopup({ item, onClose }) {
             </DropdownMenu>
 
             {/* SPECIAL REQUEST */}
-            <Label className="text-sm font-medium mt-3">
-              Special Request
-            </Label>
+            <Label className="text-sm font-medium mt-3">Special Request</Label>
             <Input
               type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
               placeholder="Tell us if you have: an allergy, an ingredient you don't like, etc."
               className="border rounded-lg py-2 px-4 w-[350px] text-sm bg-background"
             />
 
             {/* ADD TO CART */}
             <div className="flex items-center gap-4 mt-6">
-
-              <button className="flex gap-14 bg-primary text-background py-1 px-6 rounded-lg text-lg ">
-                Add to Cart 
-                <span>
-                {totalPrice} $
-                </span>
+              <button
+                onClick={handleAddToCart}
+                disabled={loading}
+                className="flex gap-14 bg-primary text-background py-1 px-6 rounded-lg text-lg cursor-pointer"
+              >
+                {loading ? "Adding..." : "Add to Cart"}
+                <span>{totalPrice} $</span>
               </button>
               <div className="flex items-center gap-3 shadow-[0_0_25px_rgba(0,0,0,0.1)] transition bg-background rounded-lg">
-                <button
-                  onClick={decrease}
-                  className="pl-3 py-1 text-xl"
-                >
+                <button onClick={decrease} className="pl-3 py-1 text-xl">
                   -
                 </button>
-                <span className="text-muted-foreground/50 text-2xl"> 
-                    |
+                <span className="text-muted-foreground/50 text-2xl">|</span>
+                <span className="text-lg font-medium text-primary">
+                  {quantity}
                 </span>
-                <span className="text-lg font-medium text-primary">{quantity}</span>
-                   <span className="text-muted-foreground/50 text-2xl"> 
-                    |
-                </span>
-                <button
-                  onClick={increase}
-                  className=" pr-3 py-1 text-xl"
-                >
+                <span className="text-muted-foreground/50 text-2xl">|</span>
+                <button onClick={increase} className=" pr-3 py-1 text-xl">
                   +
                 </button>
               </div>

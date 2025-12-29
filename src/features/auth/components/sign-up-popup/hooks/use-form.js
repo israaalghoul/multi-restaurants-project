@@ -1,25 +1,46 @@
-// src/components/RestaurantForm/useRestaurantForm.js
 import { useState } from "react";
 
-export function useForm() {
-  const [formData, setFormData] = useState({
-    name: "",
-    address: "",
-    phone: "",
-    owner: "",
-    email: "",
-    password: "",
-    confirm:""
-  });
+export const useForm = (initialState = {}) => {
+  const [formData, setFormData] = useState(initialState);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const validateField = (field) => formData[field].trim() !== "";
 
-  const isStepValid = (fields) => fields.every(validateField);
+  const validateField = (fieldName) => {
+    const value = formData[fieldName];
+    return typeof value === 'string' && value.trim() !== '';
+  };
 
-  return { formData, handleChange, validateField, isStepValid };
-}
+
+  const isStepValid = (fields) => {
+    return fields.every(validateField);
+  };
+
+  return { formData, handleChange, isStepValid };
+};
+// import { useState } from "react";
+
+// export function useForm() {
+//   const [formData, setFormData] = useState({
+//     name: "",
+//     address: "",
+//     phone: "",
+//     owner: "",
+//     email: "",
+//     password: "",
+//     confirm:""
+//   });
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData((prev) => ({ ...prev, [name]: value }));
+//   };
+
+//   const validateField = (field) => formData[field].trim() !== "";
+
+//   const isStepValid = (fields) => fields.every(validateField);
+
+//   return { formData, handleChange, validateField, isStepValid };

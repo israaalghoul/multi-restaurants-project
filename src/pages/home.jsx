@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import heroImg from "@/assets/hero.png";
 import { Button } from "@/components/ui/button";
 import logoBlackImg from "@/assets/logo-black.svg";
@@ -10,16 +10,46 @@ import restaurant2 from "@/assets/restaurant4.png";
 import restaurant1 from "@/assets/restaurant5.png";
 import featuresImg from "@/assets/features.jpg";
 import { useNavigate } from "react-router-dom";
-import {RestaurantRoutes} from "../routes/restaurant-routes";
+import { RestaurantRoutes } from "../routes/restaurant-routes";
+import { toast } from "react-toastify";
+// Api
+import { activateRestaurant } from "@/services/api.js";
 function Home() {
   const navigate = useNavigate();
+  const [loadingRestaurant, setLoadingRestaurant] = useState(null);
+  const [error, setError] = useState("");
 
   const restaurants = [
-    { img: restaurant1, bg: "#fbf9f2" },
-    { img: restaurant2, bg: "#ffffff" },
-    { img: restaurant3, bg: "#ffffff" },
-    { img: restaurant4, bg: "#fffcfc" },
-    { img: restaurant5, bg: "#f7f5f4" },
+    {
+      img: restaurant1,
+      bg: "#fbf9f2",
+      restaurant_admin_id: 8,
+      slug: "tempora",
+    },
+    {
+      img: restaurant2,
+      bg: "#ffffff",
+      restaurant_admin_id: 9,
+      slug: "tempora",
+    },
+    {
+      img: restaurant3,
+      bg: "#ffffff",
+      restaurant_admin_id: 10,
+      slug: "tempora",
+    },
+    {
+      img: restaurant4,
+      bg: "#fffcfc",
+      restaurant_admin_id: 11,
+      slug: "tempora",
+    },
+    {
+      img: restaurant5,
+      bg: "#f7f5f4",
+      restaurant_admin_id: 12,
+      slug: "tempora",
+    },
   ];
   const plans = [
     {
@@ -48,7 +78,27 @@ function Home() {
       features: ["Services", "Services", "Services", "Services", "Services"],
     },
   ];
+  // Active restaurant
+  const handleRestaurantClick = async (adminId, slug) => {
+    setLoadingRestaurant(adminId);
+    setError("");
+    try {
+      const settingsResponse = await activateRestaurant(adminId);
+      // console.log("--- RESTAURANT SETTINGS API RESPONSE ---");
+      // console.log(settingsResponse);
+      // console.log(`Navigating to restaurant with adminId: ${adminId}`);
+      toast.success('Active Restaurant successfully');
 
+      navigate(`/restaurant/${adminId}`);
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message ||
+        "Failed to activate restaurant. Please try again.";
+      toast.error(errorMessage);
+      setError(errorMessage);
+      setLoadingRestaurant(null);
+    }
+  };
   return (
     <>
       {/* Hero Section */}
@@ -85,11 +135,7 @@ function Home() {
           <h2 className="relative text-3xl md:text-4xl font-medium mb-6 flex items-stretch justify-center gap-3">
             <span className="text-primary font-light">Why </span>
             <img src={logoBlackImg} alt="Logo" width={130} />
-     
           </h2>
-          {/* <h2 className="text-3xl md:text-4xl font-semibold mb-6 flex items-center justify-center gap-2 relative">
-          <span className="text-primary font-bold">Why</span>
-          <img src={logoImg} alt="Logo" width={48} className="relative z-20 translate-y-[2px]"/> </h2> */}
           <div className="text-start">
             <p className="text-foreground text-lg leading-relaxed">
               Termbi&apos;s booking tool allows guests to check table
@@ -109,27 +155,39 @@ function Home() {
         <h2 className="text-l md:text-2xl font-medium mb-12 flex justify-center gap-1.5 md:gap-2 items-stretch text-foreground">
           <span>restaurants already trust in</span>
 
-          <img src={logoBlackImg} alt="Logo" className="w-14 md:w-20"/>
-        
+          <img src={logoBlackImg} alt="Logo" className="w-14 md:w-20" />
         </h2>
         <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
           {restaurants.map((r, i) => (
             <div
-              key={i}
-              //  onClick={() => navigate({RestaurantRoutes})}
-              className="w-[150px] h-[150px] overflow-hidden rounded-full 
-              flex items-center justify-center border-2 border-border
-              cursor-pointer transition "
+              key={r.restaurant_admin_id}
+              onClick={() =>
+                !loadingRestaurant &&
+                handleRestaurantClick(r.restaurant_admin_id, r.slug)
+              }
+              className={`w-[150px] h-[150px] overflow-hidden rounded-full 
+                        flex items-center justify-center border-2 border-border
+                        cursor-pointer transition transform hover:scale-105
+                        ${
+                          loadingRestaurant === r.restaurant_admin_id
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
               style={{ backgroundColor: r.bg }}
             >
-              <img
-                src={r.img}
-                alt={`Restaurant ${i + 1}`}
-                className="w-40 h-40 object-contain"
-              />
+              {loadingRestaurant === r.restaurant_admin_id ? (
+                <p className="text-primary font-bold">Loading...</p>
+              ) : (
+                <img
+                  src={r.img}
+                  alt={`Restaurant ${r.slug}`}
+                  className="w-40 h-40 object-contain"
+                />
+              )}
             </div>
           ))}
         </div>
+         {error && <p className="text-center text-primary mt-4">{error}</p>}
       </section>
       {/* Pricing Section */}
       <section className="py-20 px-6 md:px-16 bg-background text-background flex flex-col items-center">

@@ -1,23 +1,73 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from 'react-router-dom';
 import MenuTabs from "./menu-tabs";
 import MenuFilters from "./menu-filters";
 import MenuGrid from "./menu-grid";
 import MenuList from "./menu-list";
-import { menuItems } from "../mock-data/menu-data";
+// import { menuItems } from "../mock-data/menu-data";
+import useMenuStore from '@/store/menuStore';
+import useCartStore from '@/store/cartStore';
 import jsPDF from "jspdf";
+import {Loader} from "@/shared/components/loader"
 
 export default function MenuSection() {
-  const [category, setCategory] = useState("Pasta");
+  const categories = useMenuStore((state) => state.categories);
+  const products = useMenuStore((state) => state.products);
+  const loadingCategories = useMenuStore((state) => state.loadingCategories);
+  const loadingProducts = useMenuStore((state) => state.loadingProducts);
+  const error = useMenuStore((state) => state.error);
+  
+  const { fetchCategories, fetchProducts } = useMenuStore.getState();
+  const { restaurantId } = useParams();
+
+  const [activeCategoryId, setActiveCategoryId] = useState(null);
   const [view, setView] = useState("cards");
   const [sortBy, setSortBy] = useState("");
+  useEffect(() => {
+    if (restaurantId) {
+      // setActiveCartRestaurant(parseInt(restaurantId, 10));
+      fetchCategories(restaurantId);
+    }
+  }, [restaurantId, fetchCategories]);
 
-  const filtered = menuItems.filter((item) => item.category === category);
+ useEffect(() => {
+    if (restaurantId && activeCategoryId) {
+      fetchProducts(restaurantId, activeCategoryId);
+    }
+  }, [restaurantId, activeCategoryId, fetchProducts]);
 
-  const sorted = [...filtered].sort((a, b) => {
-    if (sortBy === "name") return a.name.localeCompare(b.name);
-    if (sortBy === "price") return a.price - b.price;
-    return 0;
-  });
+  useEffect(() => {
+    if (categories && categories.length > 0 && !activeCategoryId) {
+      // console.log("MenuSection: Setting initial active category to:", categories[0].id.toString());
+      setActiveCategoryId(categories[0].id.toString());
+    }
+  }, [categories]);
+
+  if (loadingCategories || loadingProducts) {
+    return <div className="text-center py-16 flex flex-col gap-6">
+    Loading menu...
+    <div>
+    <Loader />
+    </div>
+    </div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-16 text-primary">Error: {error}</div>;
+  }
+  let productsToShow = [...(products || [])];
+  
+
+  if (sortBy) {
+    productsToShow = [...productsToShow].sort((a, b) => {
+      if (sortBy === "name") return a.name.localeCompare(b.name);
+      if (sortBy === "price") return a.price - b.price;
+      return 0;
+    });
+  }
+   if (error) {
+    return <div className="text-center p-8 text-primary">Error: {error}</div>;
+  }
 
   const downloadMenu = () => {
     const pdf = new jsPDF();
@@ -38,9 +88,15 @@ export default function MenuSection() {
       <p className="text-center text-foreground mb-8">
         Explore our special, tasteful dishes on the Restaurant Menu!
       </p>
-
-      <MenuTabs category={category} setCategory={setCategory} />
-
+         {loadingCategories ? (
+        <div className="text-center p-8">Loading categories...</div>
+      ) : (
+        <MenuTabs 
+          category={activeCategoryId} 
+          setCategory={setActiveCategoryId} 
+        />
+      )}
+  
       <MenuFilters
         view={view}
         setView={setView}
@@ -49,7 +105,11 @@ export default function MenuSection() {
         downloadMenu={downloadMenu}
       />
 
-      {view === "cards" ? <MenuGrid items={sorted} /> : <MenuList items={sorted} />}
+     {loadingProducts ? (
+        <div className="text-center p-8">Loading products...</div>
+      ) : (
+        view === "cards" ? <MenuGrid items={productsToShow} /> : <MenuList items={productsToShow} />
+      )}
 
     </section>
   );

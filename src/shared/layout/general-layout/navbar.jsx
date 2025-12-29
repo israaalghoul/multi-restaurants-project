@@ -4,6 +4,7 @@ import { Menu, X, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router";
 import { appRoutes } from "../../../routes/app-routes";
 import logoImg from "@/assets/logo.svg";
+import useAuthStore from "@/store/authStore.js";
 
 import {
   DropdownMenu,
@@ -42,7 +43,14 @@ export function Navbar() {
     { code: "+966", flag: "🇸🇦", name: "Saudi Arabia" },
     { code: "+971", flag: "🇦🇪", name: "UAE" },
   ];
+  const token = useAuthStore((state) => state.token);
+  const logout = useAuthStore((state) => state.logout);
 
+
+  const handleLogout = () => {
+    logout();
+    navigate(appRoutes.auth.login);
+  };
   return (
     <nav className="w-full fixed top-0 left-0 z-50 bg-foreground shadow-sm">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
@@ -92,12 +100,23 @@ export function Navbar() {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button
-            onClick={() => navigate(appRoutes.auth.signUp, { replace: true })}
-            className="bg-transparent hover:bg-primary w-25 text-background rounded border-2"
-          >
-            Log in
-          </Button>
+          <div>
+              {token ? (
+                <Button
+                  onClick={handleLogout}
+                  className="bg-transparent hover:bg-primary w-25 text-background rounded border-2"
+                >
+                  Log out
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => navigate(appRoutes.auth.signUp)}
+                  className="bg-transparent hover:bg-primary w-25 text-background rounded border-2"
+                >
+                  Log in
+                </Button>
+              )}
+            </div>
         </div>
 
         {/* Mobile Menu Button */}
@@ -123,12 +142,24 @@ export function Navbar() {
               alt="US Flag"
               className="w-6 h-4"
             />
-            <Button
-              onClick={() => navigate(appRoutes.auth.signUp)}
-              className="bg-transparent hover:bg-primary w-25 text-background"
-            >
-              Log in
-            </Button>
+
+            <div>
+              {token ? (
+                <Button
+                  onClick={handleLogout}
+                  className="bg-transparent hover:bg-primary w-25 text-background rounded border-2"
+                >
+                  Log out
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => navigate(appRoutes.auth.signUp)}
+                  className="bg-transparent hover:bg-primary w-25 text-background rounded border-2"
+                >
+                  Log in
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -26,7 +26,7 @@ export function RestaurantRoutes() {
   return (
     <Routes>
       <Route
-        path={appRoutes.home}
+        path={appRoutes.homeRestaurant}
         element={
           <DefaultLayout>
             <HomeRestaurant />

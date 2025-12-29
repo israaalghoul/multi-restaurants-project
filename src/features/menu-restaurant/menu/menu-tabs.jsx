@@ -1,16 +1,20 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import useMenuStore from '@/store/menuStore';
 
-const categories = ["Pasta", "Salad", "Seafood", "Sandwiches", "Pizza", "Burger", "Juice"];
 
 export default function MenuTabs({ category, setCategory }) {
+   const categories = useMenuStore((state) => state.categories);
+  if (!categories || categories.length === 0) {
+    return null; 
+  }
   return (
     <Tabs value={category} onValueChange={setCategory} className="lg:w-4xl w-sm flex justify-center items-center mb-6 ">
       
       <TabsList className="bg-transparent">
         {categories.map((cat) => (
           <TabsTrigger
-            key={cat}
-            value={cat}
+            key={cat.id}
+            value={cat.id.toString()}
             className="text-muted-foreground 
             lg:text-xl md:text-sm text-[11px]
             lg:px-10 md:px-5 px-1
@@ -21,7 +25,7 @@ export default function MenuTabs({ category, setCategory }) {
             data-[state=active]:border-b-2  
             rounded-none"
           >
-            {cat}
+            {cat.name}
           </TabsTrigger>
         ))}
       </TabsList>

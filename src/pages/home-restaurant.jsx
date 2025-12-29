@@ -1,12 +1,31 @@
-import React ,{useState}from "react";
+import React ,{useEffect, useState}from "react";
 import heroImg from "@/assets/hero-restaurant.jpg";
 import { Button } from "@/components/ui/button";
 import { MapPin } from "lucide-react";
 import MenuSection from "@/features/menu-restaurant/menu/menu-section";
 import { usePopupStore } from "@/store/popup-signup-store";
+import { useParams } from 'react-router-dom';
+import {Loader} from "@/shared/components/loader";
+
 function HomeRestaurant() {
-    const openSignUp  = usePopupStore((s) => s.openSignUp);
- 
+  const openSignUp  = usePopupStore((s) => s.openSignUp);
+// Show restaurant slug
+  const { slug } = useParams();
+  const [restaurantData, setRestaurantData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    setLoading(false);
+  }, [slug]);
+
+  if (loading) {
+    return <div className="text-center py-16 flex flex-col gap-6">
+       <p>Loading restaurant details...</p>
+        <div>
+        <Loader />
+        </div>
+        </div>;;
+  }
   return (
     <>
       {/* Hero sec */}
