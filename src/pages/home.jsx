@@ -94,7 +94,7 @@ function Home() {
       const errorMessage =
         err.response?.data?.message ||
         "Failed to activate restaurant. Please try again.";
-      toast.error(errorMessage);
+      toast.error('Active Restaurant failed');
       setError(errorMessage);
       setLoadingRestaurant(null);
     }

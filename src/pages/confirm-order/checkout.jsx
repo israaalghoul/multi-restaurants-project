@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -7,17 +7,64 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import CustomBreadcrumb from "@/shared/components/breadcrumb";
 import { appRoutes } from "../../routes/app-routes";
-import {DatePickerUsingPopover} from "@/shared/components/date-picker";
+import { DatePickerUsingPopover } from "@/shared/components/date-picker";
+import useCartStore from "@/store/cartStore";
+import { Loader } from "@/shared/components/loader";
 
 export function Checkout() {
   const navigate = useNavigate();
   const [date, setDate] = useState();
+  const items = useCartStore((state) => state.items);
+  const loading = useCartStore((state) => state.loading);
+  const error = useCartStore((state) => state.error);
+  const fetchCart = useCartStore((state) => state.fetchCart);
+
+  useEffect(() => {
+    if (items.length === 0 && !loading) {
+      console.log("Checkout.jsx: Cart seems empty, fetching...");
+      fetchCart();
+    }
+  }, [items, loading, fetchCart]);
+
+  const restaurantIdFromCart = items[0]?.product?.restaurant_admin_id;
+  const backToRestaurantLink = restaurantIdFromCart
+    ? `/restaurant/${restaurantIdFromCart}`
+    : "/";
+
+  if (error) {
+    return <div className="text-center py-28 text-primary">{error}</div>;
+  }
+
+  if (loading || items.length === 0) {
+    return (
+      <div className="text-center py-34 flex flex-col gap-6">
+        Loading Checkout...
+        <div>
+          <Loader />
+        </div>
+      </div>
+    );
+  }
+
+  useEffect(() => {
+    if (items.length === 0) {
+      navigate(appRoutes.cart);
+    }
+  }, [items, navigate]);
+
+  const grandTotal = items.reduce((total, item) => {
+    const itemPrice = item.product?.price || 0;
+    return total + itemPrice * item.quantity;
+  }, 0);
+
+  const deliveryFee = 30;
+  const finalTotal = grandTotal + deliveryFee;
   return (
     <section className="bg-background lg:px-26 px-8 py-28 ">
       <div className="flex justify-center">
         <CustomBreadcrumb
           items={[
-            { label: "Home", href: appRoutes.home },
+            { label: "Home", href: backToRestaurantLink },
             { label: "Cart", href: appRoutes.cart },
             { label: "Checkout", href: appRoutes.checkout },
             { label: "Place order", href: appRoutes.placeOrder },
@@ -30,7 +77,7 @@ export function Checkout() {
 
         <div className="flex flex-col w-full lg:w-2/3  text-center items-center gap-25">
           <div className="flex flex-col w-[80%] p-8 shadow rounded-xl bg-secondary/30 gap-6 text-center items-center">
-            <h3 className="font-medium">Payment Detailes</h3>
+            <h3 className="font-medium">Payment Details</h3>
 
             <div className="flex flex-col space-y-3 ">
               <Label className="text-sm font-medium">Cardholder Name</Label>
@@ -50,8 +97,7 @@ export function Checkout() {
                   <Label className="text-sm font-medium ">
                     Expiration Date
                   </Label>
-                         <DatePickerUsingPopover date={date} setDate={setDate} />
-         
+                  <DatePickerUsingPopover date={date} setDate={setDate} />
                 </div>
                 <div className="space-y-3">
                   <Label className="text-sm font-medium ">CVV</Label>
@@ -79,17 +125,19 @@ export function Checkout() {
 
             <div className="flex justify-between text-foreground mt-6">
               <span>Total Price</span>
-              <span className="text-primary">510$</span>
+              <span className="text-primary">{grandTotal.toFixed(2)} $</span>
             </div>
 
             <div className="flex justify-between text-foreground">
               <span>Delivery</span>
-              <span className="text-primary">30$</span>
+              <span className="text-primary">{deliveryFee.toFixed(2)} $</span>
             </div>
 
             <div className="border-t pt-3 border-border flex justify-between">
               <span>Grand Total</span>
-              <span className="text-primary font-semibold">540$</span>
+              <span className="text-primary font-semibold">
+                {finalTotal.toFixed(2)} $
+              </span>
             </div>
           </div>
           <div className="flex flex-col p-6 shadow-lg rounded-xl bg-background ">

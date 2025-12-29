@@ -70,6 +70,16 @@ export const verifyEmail = async (email, code) => {
     throw error;
   }
 };
+// Get profile
+export const getProfile = async () => {
+  try {
+    const response = await api.get('/profile');
+    return response.data?.data; 
+  } catch (error) {
+    console.error('Failed to fetch profile:', error.response?.data);
+    throw error;
+  }
+};
 // Active Restaurant
 export const activateRestaurant = async (adminId) => {
   try {
@@ -170,13 +180,23 @@ export const updateCartItem = async (cartItemId, updateData) => {
   }
 };
 
-export const deleteCartItem = async (productId) => {
+export const deleteCartItem = async (cartItemId) => {
   try {
     
-    const response = await api.delete(`/carts/${productId}`);
-    return response.data;
+   const response = await api.delete(`/carts/${cartItemId}`);
+     return response.data;
   } catch (error) {
     console.error('Failed to delete cart item:', error.response?.data);
+    throw error;
+  }
+};
+
+export const clearCart = async () => {
+  try {
+    const response = await api.delete('/carts/clear');
+    return response.data;
+  } catch (error) {
+    console.error('Failed to clear cart:', error.response?.data);
     throw error;
   }
 };

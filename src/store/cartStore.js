@@ -4,6 +4,7 @@ import {
   addToCart,
   updateCartItem,
   deleteCartItem,
+  clearCart 
 } from "@/services/api";
 import { toast } from 'react-toastify';
 
@@ -91,6 +92,36 @@ const useCartStore = create((set, get) => ({
       set({ error: "Failed to delete item.", loading: false });
     }
   },
+
+ clearCart: async () => {
+    set({ loading: true });
+    try {
+      const currentItems = get().items;
+      
+      if (currentItems.length === 0) {
+        set({ loading: false });
+        return;
+      }
+
+      // console.log("Clearing cart by deleting all items one by one...");
+
+      const deletePromises = currentItems.map(item => 
+        deleteCartItem(item.id) 
+      );
+
+      await Promise.all(deletePromises);
+
+      set({ items: [], activeRestaurantId: null, loading: false, error: null });
+      // console.log("Cart cleared successfully.");
+
+    } catch (error) {
+      const errorMsg = "Failed to clear the cart.";
+      console.error(errorMsg, error);
+      set({ error: errorMsg, loading: false });
+    }
+  },
+  
+
   setActiveRestaurant: (restaurantId) => {
     set({ activeRestaurantId: restaurantId });
   },
